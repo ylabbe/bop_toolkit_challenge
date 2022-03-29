@@ -10,9 +10,11 @@ selected dataset.
 """
 
 import os
+import sys
 import glob
 import numpy as np
 
+import argparse
 from bop_toolkit_lib import config
 from bop_toolkit_lib import dataset_params
 from bop_toolkit_lib import inout
@@ -25,13 +27,13 @@ from bop_toolkit_lib import visibility
 ################################################################################
 p = {
   # See dataset_params.py for options.
-  'dataset': 'lm',
+  'dataset': 'itodd',
 
   # Dataset split. Options: 'train', 'val', 'test'.
-  'dataset_split': 'test',
+  'dataset_split': 'train_pbr_v2',
 
   # Dataset split type. None = default. See dataset_params.py for options.
-  'dataset_split_type': None,
+  'dataset_split_type': 'pbr',
 
   # Whether to save visualizations of visibility masks.
   'vis_visibility_masks': False,
@@ -52,6 +54,11 @@ p = {
     '{im_id:06d}_{gt_id:06d}.jpg'),
 }
 ################################################################################
+################################################################################
+parser = argparse.ArgumentParser()
+parser.add_argument('--start_scene', type=int, default=-1)
+parser.add_argument('--end_scene', type=int, default=-1)
+args = parser.parse_args()
 
 
 if p['vis_visibility_masks']:
@@ -82,8 +89,13 @@ for obj_id in dp_model['obj_ids']:
   ren.add_object(obj_id, model_fpath)
 
 scene_ids = dataset_params.get_present_scene_ids(dp_split)
-for scene_id in scene_ids:
 
+if args.start_scene > 0:
+  scene_ids = list(range(args.start_scene, args.end_scene+1))
+
+misc.log(f'Processing scene ids: {scene_ids}')
+
+for scene_id in scene_ids:
   # Load scene info and ground-truth poses.
   scene_camera = inout.load_scene_camera(
     dp_split['scene_camera_tpath'].format(scene_id=scene_id))
@@ -122,8 +134,11 @@ for scene_id in scene_ids:
                    ren_cx_offset:(ren_cx_offset + im_width)]
 
       # Convert depth images to distance images.
-      dist_gt = misc.depth_im_to_dist_im(depth_gt, K)
-      dist_im = misc.depth_im_to_dist_im(depth, K)
+      # dist_gt = misc.depth_im_to_dist_im(depth_gt, K)
+      # dist_im = misc.depth_im_to_dist_im(depth, K)
+      #
+      dist_gt = misc.depth_im_to_dist_im_fast(depth_gt, K)
+      dist_im = misc.depth_im_to_dist_im_fast(depth, K)
 
       # Estimation of the visibility mask.
       visib_gt = visibility.estimate_visib_mask_gt(
