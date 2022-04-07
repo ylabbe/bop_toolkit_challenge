@@ -112,20 +112,7 @@ for obj_id, obj in enumerate(chunk_infos['scene_infos']['objects']):
     synset_id, source_id = obj['synset_id'], obj['source_id']
     obj_name = obj['category_id']
     obj_name_to_id[obj_name] = obj_id
-    obj_path = Path(shapenet_dir / f'{synset_id}/{source_id}/models/model_normalized.obj')
-    # ply_path = Path(str(obj_path.with_suffix('')) + f'{scale:.2f}.ply')
-    ply_path = Path(str(obj_path.with_suffix('')) + f'_scaled.ply')
-
-    # ply_path = '/gpfsscratch/rech/vuw/uwi72sr/cosypose_data/bop_datasets/ycbv/'
-    if not ply_path.exists() or args.overwrite_models:
-        mesh = trimesh.load(str(obj_path),
-                            skip_materials=True,
-                            process=False,
-                            maintain_order=True)
-        mesh = as_mesh(mesh)
-        mesh.apply_scale(scale)
-        mesh.apply_scale(1000)
-        mesh.export(str(ply_path), encoding='ascii')
+    ply_path = Path(shapenet_dir) / f'{synset_id}/{source_id}' / 'models/model_normalized_scaled.ply'
     ren.add_object(obj_id, str(ply_path))
 
 scene_ids = [0]

@@ -112,18 +112,8 @@ for obj_id, obj in enumerate(chunk_infos['scene_infos']['objects']):
     synset_id, source_id = obj['synset_id'], obj['source_id']
     obj_name = obj['category_id']
     obj_name_to_id[obj_name] = obj_id
-    obj_path = Path(shapenet_dir / f'{synset_id}/{source_id}/models/model_normalized.obj')
-    ply_path = Path(str(obj_path.with_suffix('')) + f'_scaled.ply')
-
-    if not ply_path.exists() or args.overwrite_models:
-        mesh = trimesh.load(str(obj_path),
-                            skip_materials=True,
-                            process=False,
-                            maintain_order=True)
-        mesh = as_mesh(mesh)
-        mesh.apply_scale(scale)
-        mesh.apply_scale(1000)
-        mesh.export(str(ply_path), encoding='ascii')
+    ply_path = Path(shapenet_dir)
+    ply_path = ply_path / f'{synset_id}/{source_id}' / 'models/model_normalized_scaled.ply'
     large_ren.add_object(obj_id, str(ply_path))
 
 scene_ids = [0]
@@ -135,11 +125,6 @@ for scene_id in scene_ids:
     scene_dir =  chunk_dir / f'bop_data/train_pbr/{scene_id:06d}'
     scene_camera = inout.load_scene_camera(scene_dir / 'scene_camera.json')
     scene_gt = inout.load_scene_gt(str(scene_gt_tpath).format(scene_id=scene_id))
-
-    mask_dir_path = str(scene_dir / 'mask')
-    misc.ensure_dir(mask_dir_path)
-    mask_visib_dir_path = str(scene_dir / 'mask_visib')
-    misc.ensure_dir(mask_visib_dir_path)
 
     scene_gt_info = {}
     im_ids = sorted(scene_gt.keys())
