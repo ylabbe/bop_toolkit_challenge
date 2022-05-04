@@ -9,13 +9,21 @@ COSYPOSE_DIR = Path(os.environ['COSYPOSE_DIR'])
 ######## Basic ########
 
 # Folder with the BOP datasets.
-datasets_path = str(COSYPOSE_DIR / 'local_data/bop_datasets')
+if 'BOP_DATASETS_PATH' in os.environ:
+    datasets_path = str(os.environ['BOP_DATASETS_PATH'])
+else:
+    datasets_path = str(COSYPOSE_DIR / 'local_data/bop_datasets')
 
-# Folder with pose results to be evaluated.
-results_path = str(COSYPOSE_DIR / 'local_data/bop_predictions_csv')
+if 'BOP_RESULTS_PATH' in os.environ:
+    results_path = str(os.environ['BOP_RESULTS_PATH'])
+else:
+    results_path = str(COSYPOSE_DIR / 'local_data/bop_predictions_csv')
 
 # Folder for the calculated pose errors and performance scores.
-eval_path = str(COSYPOSE_DIR / 'local_data/bop_eval_outputs')
+if 'BOP_EVAL_PATH' in os.environ:
+    eval_path = str(os.environ['BOP_EVAL_PATH'])
+else:
+    eval_path = str(COSYPOSE_DIR / 'local_data/bop_eval_outputs')
 
 ######## Extended ########
 
