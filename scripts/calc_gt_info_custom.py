@@ -71,6 +71,7 @@ def as_mesh(scene_or_mesh):
 parser = argparse.ArgumentParser()
 parser.add_argument('--chunk-dir', type=str)
 parser.add_argument('--shapenet-dir', type=str)
+parser.add_argument('--gso-dir', type=str)
 parser.add_argument('--renderer-type', type=str, default='cpp')
 parser.add_argument('--overwrite-models', action='store_true')
 args = parser.parse_args()
@@ -85,7 +86,12 @@ scene_gt_info_tpath = (chunk_dir / 'bop_data/train_pbr/{scene_id:06d}/scene_gt_i
 depth_gt_info_tpath = (chunk_dir / 'bop_data/train_pbr/{scene_id:06d}/depth/{im_id:06d}.png')
 vis_mask_visib_tpath = (chunk_dir / 'bop_data/train_pbr/{scene_id:06d}/mask_visib/{im_id:06d}_{inst_id:06d}.png')
 
-shapenet_dir = Path(args.shapenet_dir)
+if args.shapenet_dir:
+    shapenet_dir = Path(args.shapenet_dir)
+    is_shapenet = True
+else:
+    is_shapenet = False
+    gso_dir = Path(args.gso_dir)
 scale = chunk_infos['scale']
 
 p = dict(
@@ -109,11 +115,15 @@ large_ren = renderer.create_renderer(
 misc.log('Initializing renderer...')
 obj_name_to_id = dict()
 for obj_id, obj in enumerate(chunk_infos['scene_infos']['objects']):
-    synset_id, source_id = obj['synset_id'], obj['source_id']
-    obj_name = obj['category_id']
+    if is_shapenet:
+        synset_id, source_id = obj['synset_id'], obj['source_id']
+        obj_name = obj['category_id']
+        ply_path = Path(shapenet_dir) / f'{synset_id}/{source_id}' / 'models/model_normalized_scaled.ply'
+    else:
+        obj_name = obj['category_id']
+        gso_id = obj_name.split('gso_')[1]
+        ply_path = Path(gso_dir) / f'{gso_id}' / 'meshes/model.ply'
     obj_name_to_id[obj_name] = obj_id
-    ply_path = Path(shapenet_dir)
-    ply_path = ply_path / f'{synset_id}/{source_id}' / 'models/model_normalized_scaled.ply'
     large_ren.add_object(obj_id, str(ply_path))
 
 scene_ids = [0]
